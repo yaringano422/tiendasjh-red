@@ -1,5 +1,11 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Phone } from '../types/phone';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import { Phone } from "../types/phones";
 
 interface CartItem extends Phone {
   quantity: number;
@@ -27,7 +33,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   // Cargar carrito desde localStorage
   useEffect(() => {
-    const savedCart = localStorage.getItem('cart');
+    const savedCart = localStorage.getItem("cart");
     if (savedCart) {
       setCart(JSON.parse(savedCart));
     }
@@ -35,7 +41,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   // Guardar carrito en localStorage
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart));
+    localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
   const addToCart = (phone: Phone) => {
@@ -43,7 +49,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const existing = prev.find((item) => item.id === phone.id);
       if (existing) {
         return prev.map((item) =>
-          item.id === phone.id ? { ...item, quantity: item.quantity + 1 } : item
+          item.id === phone.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item,
         );
       }
       return [...prev, { ...phone, quantity: 1 }];
@@ -60,7 +68,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return;
     }
     setCart((prev) =>
-      prev.map((item) => (item.id === phoneId ? { ...item, quantity } : item))
+      prev.map((item) => (item.id === phoneId ? { ...item, quantity } : item)),
     );
   };
 
@@ -70,7 +78,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const addToCompare = (phone: Phone) => {
     if (compareList.length >= 4) {
-      alert('Máximo 4 productos para comparar');
+      alert("Máximo 4 productos para comparar");
       return;
     }
     if (compareList.find((p) => p.id === phone.id)) {
@@ -87,7 +95,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setCompareList([]);
   };
 
-  const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const cartTotal = cart.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
+  );
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
@@ -114,7 +125,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 export function useStore() {
   const context = useContext(StoreContext);
   if (!context) {
-    throw new Error('useStore debe usarse dentro de StoreProvider');
+    throw new Error("useStore debe usarse dentro de StoreProvider");
   }
   return context;
 }
