@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Phone } from "../types/phones";
 import {
   Cpu,
@@ -14,12 +14,51 @@ import { Helmet } from "react-helmet-async";
 
 interface PhoneCardProps {
   phone: Phone;
+  isInitiallyOpen?: boolean; // 🔥 Propiedad para abrir desde la URL
 }
 
-export function PhoneCard({ phone }: PhoneCardProps) {
+// 🌐 Función para generar URLs limpias (Slugs)
+const generateSlug = (name: string) => {
+  return name
+    .toLowerCase()
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+};
+
+export function PhoneCard({ phone, isInitiallyOpen = false }: PhoneCardProps) {
   const { addToCart, addToCompare } = useStore();
   const [currentImage, setCurrentImage] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
+
+  // 🚀 Toque Maestro: Si el padre le dice que debe estar abierto, lo abre.
+  useEffect(() => {
+    if (isInitiallyOpen) {
+      setIsOpen(true);
+    }
+  }, [isInitiallyOpen]);
+
+  // 🛠️ Solución definitiva para TypeScript
+  const rawImages = phone.images as string | string[] | undefined;
+  const imagesArray: string[] = Array.isArray(rawImages)
+    ? rawImages
+    : typeof rawImages === "string" && rawImages.trim() !== ""
+      ? rawImages.split(",").map((img) => img.trim())
+      : [];
+
+  const mainImage =
+    imagesArray.length > 0
+      ? imagesArray[currentImage]
+      : getPhoneImage(phone.brand);
+
+  // 🚪 Función controlada para cerrar el modal y limpiar la URL
+  const handleClose = () => {
+    setIsOpen(false);
+    window.history.pushState({}, "", window.location.pathname);
+  };
 
   return (
     <div className="bg-white dark:bg-card border border-zinc-200 dark:border-border rounded-xl shadow-sm hover:border-primary/50 hover:shadow-primary/10 transition-all duration-300 overflow-hidden group flex flex-col justify-between h-full">
@@ -36,60 +75,55 @@ export function PhoneCard({ phone }: PhoneCardProps) {
       {/* Contenedor de Imagen */}
       <div
         className="relative h-52 border-b border-zinc-100 dark:border-border overflow-hidden cursor-pointer"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          setIsOpen(true);
+          const slug = generateSlug(phone.fullName);
+          window.history.pushState({}, "", `?producto=${slug}`);
+        }}
       >
         <img
-          src={
-            phone.images && phone.images.length > 0
-              ? phone.images[currentImage]
-              : getPhoneImage(phone.brand)
-          }
+          src={mainImage}
           alt={phone.fullName}
           loading="lazy"
           onMouseEnter={() => {
-            if (phone.images && phone.images.length > 1) {
-              setCurrentImage(1);
-            }
+            if (imagesArray.length > 1) setCurrentImage(1);
           }}
-          onMouseLeave={() => {
-            setCurrentImage(0);
-          }}
+          onMouseLeave={() => setCurrentImage(0)}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
         <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white dark:from-background to-transparent opacity-70"></div>
       </div>
 
       {/* MODAL / VISOR DE IMÁGENES */}
-      {isOpen && phone.images && (
+      {isOpen && imagesArray.length > 0 && (
         <div
           className="fixed inset-0 bg-black/80 backdrop-blur-xl flex items-center justify-center z-50 p-4 transition-opacity duration-300"
-          onClick={() => setIsOpen(false)}
+          onClick={handleClose}
         >
           <div
             className="relative bg-white/90 dark:bg-background/60 border border-zinc-200 dark:border-[var(--glass-border)] p-5 rounded-2xl max-w-xl w-full shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <button
-              onClick={() => setIsOpen(false)}
+              onClick={handleClose}
               className="absolute top-3 right-3 text-zinc-500 hover:text-zinc-800 dark:text-foreground/50 dark:hover:text-foreground transition-colors p-1.5 bg-zinc-100 dark:bg-accent/50 rounded-full"
             >
               ✕
             </button>
 
             <img
-              src={phone.images[currentImage]}
+              src={imagesArray[currentImage]}
               alt={phone.fullName}
               className="w-full h-auto max-h-[70vh] object-contain mb-5 rounded-lg"
             />
 
-            {/* Navegación de Imágenes en Modal */}
             <div className="flex justify-between items-center gap-4">
-              {phone.images.length > 1 && (
+              {imagesArray.length > 1 && (
                 <button
                   onClick={() =>
                     setCurrentImage(
                       currentImage === 0
-                        ? phone.images.length - 1
+                        ? imagesArray.length - 1
                         : currentImage - 1,
                     )
                   }
@@ -99,9 +133,8 @@ export function PhoneCard({ phone }: PhoneCardProps) {
                 </button>
               )}
 
-              {/* Miniaturas en el modal */}
               <div className="flex gap-2.5 justify-center overflow-x-auto py-1">
-                {phone.images.map((img, index) => (
+                {imagesArray.map((img, index) => (
                   <img
                     key={index}
                     src={img}
@@ -116,11 +149,11 @@ export function PhoneCard({ phone }: PhoneCardProps) {
                 ))}
               </div>
 
-              {phone.images.length > 1 && (
+              {imagesArray.length > 1 && (
                 <button
                   onClick={() =>
                     setCurrentImage(
-                      currentImage === phone.images.length - 1
+                      currentImage === imagesArray.length - 1
                         ? 0
                         : currentImage + 1,
                     )
@@ -148,7 +181,6 @@ export function PhoneCard({ phone }: PhoneCardProps) {
             </h3>
           </div>
 
-          {/* Especificaciones */}
           <div className="grid grid-cols-2 gap-x-3 gap-y-2.5 pt-1">
             <div className="flex items-center text-sm text-zinc-600 dark:text-foreground/70 bg-zinc-50 dark:bg-accent/30 p-2 rounded-lg border border-zinc-100 dark:border-border">
               <Wifi className="w-4 h-4 mr-2.5 text-primary" />
@@ -171,7 +203,6 @@ export function PhoneCard({ phone }: PhoneCardProps) {
           </div>
         </div>
 
-        {/* Precio y Botones */}
         <div className="border-t border-zinc-100 dark:border-border pt-4">
           <div className="flex items-center justify-between mb-4">
             <span className="text-3xl font-extrabold text-zinc-900 dark:text-foreground tracking-tight">
@@ -180,7 +211,6 @@ export function PhoneCard({ phone }: PhoneCardProps) {
           </div>
 
           <div className="flex gap-3">
-            {/* BOTÓN AGREGAR CORREGIDO CON CONTRASTE ALTO */}
             <button
               onClick={() => addToCart(phone)}
               className="flex-1 flex items-center justify-center gap-2.5 px-5 py-3 bg-zinc-900 dark:bg-primary text-white dark:text-white rounded-xl hover:bg-zinc-800 dark:hover:bg-primary/90 transition-all font-semibold shadow-lg shadow-zinc-900/10 dark:shadow-primary/20 active:scale-[0.98]"

@@ -31,22 +31,19 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     let mensaje =
       "¡Hola Tienda Jhared! 👋 Me interesa concretar la compra de los siguientes equipos de mi carrito:\n\n";
 
-    cart.forEach((item: any) => {
-      // Usamos item.fullName o item.phone.fullName dependiendo de tu interfaz
-      const nombre = item.fullName || item.phone?.fullName || "Producto";
+    cart.forEach((item) => {
+      const nombre = item.fullName || "Producto";
       const cantidad = item.quantity;
-      const precioTotal = (item.price || item.phone?.price || 0) * cantidad;
+      const precioTotal = item.price * cantidad;
 
       mensaje += `* ${cantidad}x ${nombre} (S/${precioTotal.toFixed(2)})\n`;
     });
 
     mensaje += `\n*Total a pagar: S/${cartTotal.toFixed(2)}*\n\n¿Tienen stock disponible para coordinar el pago?`;
 
-    // Codifica el mensaje para que sea válido en una URL
     const mensajeEncriptado = encodeURIComponent(mensaje);
     const urlWhatsapp = `https://wa.me/${numeroTelefono}?text=${mensajeEncriptado}`;
 
-    // Abre WhatsApp en una pestaña nueva
     window.open(urlWhatsapp, "_blank");
   };
 
@@ -78,60 +75,53 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             </div>
           ) : (
             <div className="space-y-4">
-              {cart.map((item: any) => {
-                // Mapeo seguro por si las propiedades están anidadas en item.phone
-                const id = item.id || item.phone?.id;
-                const fullName = item.fullName || item.phone?.fullName;
-                const connectivity =
-                  item.connectivity || item.phone?.connectivity;
-                const ram = item.ram || item.phone?.ram;
-                const storage = item.storage || item.phone?.storage;
-                const price = item.price || item.phone?.price || 0;
+              {cart.map((item) => (
+                <div key={item.id} className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-800">
+                        {item.fullName}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        {item.connectivity} | {item.ram} | {item.storage}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => removeFromCart(item.id)}
+                      className="p-1 hover:bg-red-100 rounded text-red-600"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
 
-                return (
-                  <div key={id} className="bg-gray-50 rounded-lg p-4">
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-800">
-                          {fullName}
-                        </h3>
-                        <p className="text-sm text-gray-500">
-                          {connectivity} | {ram} | {storage}
-                        </p>
-                      </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
                       <button
-                        onClick={() => removeFromCart(id)}
-                        className="p-1 hover:bg-red-100 rounded text-red-600"
+                        onClick={() =>
+                          updateQuantity(item.id, item.quantity - 1)
+                        }
+                        className="p-1 bg-white border rounded hover:bg-gray-100"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Minus className="w-4 h-4" />
+                      </button>
+                      <span className="font-semibold w-8 text-center">
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() =>
+                          updateQuantity(item.id, item.quantity + 1)
+                        }
+                        className="p-1 bg-white border rounded hover:bg-gray-100"
+                      >
+                        <Plus className="w-4 h-4" />
                       </button>
                     </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => updateQuantity(id, item.quantity - 1)}
-                          className="p-1 bg-white border rounded hover:bg-gray-100"
-                        >
-                          <Minus className="w-4 h-4" />
-                        </button>
-                        <span className="font-semibold w-8 text-center">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() => updateQuantity(id, item.quantity + 1)}
-                          className="p-1 bg-white border rounded hover:bg-gray-100"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </button>
-                      </div>
-                      <span className="font-bold text-lg">
-                        S/{(price * item.quantity).toFixed(2)}
-                      </span>
-                    </div>
+                    <span className="font-bold text-lg">
+                      S/{(item.price * item.quantity).toFixed(2)}
+                    </span>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -151,7 +141,6 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               Vaciar Carrito
             </button>
 
-            {/* BOTÓN DE WHATSAPP SIMULANDO PASARELA */}
             <button
               onClick={handleCheckoutWhatsApp}
               className="w-full py-3 bg-green-600 text-white flex items-center justify-center gap-2 rounded-lg hover:bg-green-700 transition-colors font-semibold shadow-md"

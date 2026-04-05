@@ -749,7 +749,7 @@ export const phonesData: Phone[] = [
     storage: "64GB",
     price: 285,
     fullName: "ZTE Blade A35E",
-    images: ["/images/ztea35e/ztea35e-1.jpg", "/images/ztea35e/ztea35e-2.jpg"],
+    images: ["/images/a35e/a35e-1.jpg", "/images/a35e/a35e-2.jpg"],
     category: "celulares",
   },
   {
@@ -761,7 +761,11 @@ export const phonesData: Phone[] = [
     storage: "128GB",
     price: 359,
     fullName: "ZTE Blade A54",
-    images: ["/images/ztea54/ztea54-1.jpg", "/images/ztea54/ztea54-2.jpg"],
+    images: [
+      "/images/ztea54/ztea54-1.jpg",
+      "/images/ztea54/ztea54-2.jpg",
+      "/images/ztea54/ztea54-3.jpg",
+    ],
     category: "celulares",
   },
   {
@@ -773,7 +777,11 @@ export const phonesData: Phone[] = [
     storage: "128GB",
     price: 369,
     fullName: "ZTE Blade A55",
-    images: ["/images/ztea55/ztea55-1.jpg", "/images/ztea55/ztea55-2.jpg"],
+    images: [
+      "/images/ztea55/ztea55-1.jpg",
+      "/images/ztea55/ztea55-2.jpg",
+      "/images/ztea55/ztea55-3.jpg",
+    ],
     category: "celulares",
   },
   {
@@ -786,8 +794,9 @@ export const phonesData: Phone[] = [
     price: 459,
     fullName: "ZTE Blade V50 Design",
     images: [
-      "/images/ztev50design/ztev50design-1.jpg",
-      "/images/ztev50design/ztev50design-2.jpg",
+      "/images/v50design/v50design-1.jpg",
+      "/images/v50design/v50design-2.jpg",
+      "/images/v50design/v50design-3.jpg",
     ],
     category: "celulares",
   },
@@ -801,8 +810,9 @@ export const phonesData: Phone[] = [
     price: 400,
     fullName: "ZTE Blade V60 Smart",
     images: [
-      "/images/ztev60smart/ztev60smart-1.jpg",
-      "/images/ztev60smart/ztev60smart-2.jpg",
+      "/images/v60smart/v60smart-1.jpg",
+      "/images/v60smart/v60smart-2.jpg",
+      "/images/v60smart/v60smart-3.jpg",
     ],
     category: "celulares",
   },
@@ -815,7 +825,11 @@ export const phonesData: Phone[] = [
     storage: "256GB",
     price: 495,
     fullName: "ZTE Blade V70",
-    images: ["/images/ztev70/ztev70-1.jpg", "/images/ztev70/ztev70-2.jpg"],
+    images: [
+      "/images/ztev70/ztev70-1.jpg",
+      "/images/ztev70/ztev70-2.jpg",
+      "/images/ztev70/ztev70-3.jpg",
+    ],
     category: "celulares",
   },
   {
@@ -828,9 +842,21 @@ export const phonesData: Phone[] = [
     price: 639,
     fullName: "ZTE Nubia V80 MAX",
     images: [
-      "/images/ztev80max/ztev80max-1.jpg",
-      "/images/ztev80max/ztev80max-2.jpg",
-    ], // ⚠️ No encontré carpeta para este en el árbol
+      "/images/nubiav80max/nubiav80max-1.jpg",
+      "/images/nubiav80max/nubiav80max-2.jpg",
+      "/images/nubiav80max/nubiav80max-3.jpg",
+      "/images/nubiav80max/nubiav80max-4.jpg",
+      "/images/nubiav80max/nubiav80max-5.jpg",
+      "/images/nubiav80max/nubiav80max-6.jpg",
+      "/images/nubiav80max/nubiav80max-7.jpg",
+      "/images/nubiav80max/nubiav80max-8.jpg",
+      "/images/nubiav80max/nubiav80max-9.jpg",
+      "/images/nubiav80max/nubiav80max-10.jpg",
+      "/images/nubiav80max/nubiav80max-11.jpg",
+      "/images/nubiav80max/nubiav80max-12.jpg",
+      "/images/nubiav80max/nubiav80max-13.jpg",
+      "/images/nubiav80max/nubiav80max-14.jpg",
+    ],
     category: "celulares",
   },
   {
@@ -843,9 +869,10 @@ export const phonesData: Phone[] = [
     price: 700,
     fullName: "ZTE Nubia V80 PRO",
     images: [
-      "/images/ztev80pro/ztev80pro-1.jpg",
-      "/images/ztev80pro/ztev80pro-2.jpg",
-    ], // ⚠️ No encontré carpeta para este en el árbol
+      "/images/nubiav80pro/nubiav80pro-1.jpg",
+      "/images/nubiav80pro/nubiav80pro-2.jpg",
+      "/images/nubiav80pro/nubiav80pro-3.jpg",
+    ],
     category: "celulares",
   },
   {
@@ -869,7 +896,12 @@ export const phonesData: Phone[] = [
     storage: "64GB",
     price: 319,
     fullName: "ZTE A36",
-    images: ["/images/ztea36/ztea36-1.jpg", "/images/ztea36/ztea36-2.jpg"],
+    images: [
+      "/images/ztea36/ztea36-1.jpg",
+      "/images/ztea36/ztea36-2.jpg",
+      "/images/ztea36/ztea36-3.jpg",
+      "/images/ztea36/ztea36-4.jpg",
+    ],
     category: "celulares",
   },
   {
@@ -881,7 +913,19 @@ export const phonesData: Phone[] = [
     storage: "256GB",
     price: 849,
     fullName: "ZTE Nubia Air",
-    images: ["/images/zte/zteair-1.jpg", "/images/zte/zteair-2.jpg"], // ⚠️ No encontré carpeta para este en el árbol
+    images: [
+      "/images/nubiaair/nubiaair-1.jpg",
+      "/images/nubiaair/nubiaair-2.jpg",
+      "/images/nubiaair/nubiaair-3.jpg",
+      "/images/nubiaair/nubiaair-4.jpg",
+      "/images/nubiaair/nubiaair-5.jpg",
+      "/images/nubiaair/nubiaair-6.jpg",
+      "/images/nubiaair/nubiaair-7.jpg",
+      "/images/nubiaair/nubiaair-8.jpg",
+      "/images/nubiaair/nubiaair-9.jpg",
+      "/images/nubiaair/nubiaair-10.jpg",
+      "/images/nubiaair/nubiaair-11.jpg",
+    ],
     category: "celulares",
   },
   {
@@ -894,9 +938,11 @@ export const phonesData: Phone[] = [
     price: 999,
     fullName: "ZTE Nubia FOCUS ULTRA",
     images: [
-      "/images/zte/ztefocusultra-1.jpg",
-      "/images/zte/ztefocusultra-2.jpg",
-    ], // ⚠️ No encontré carpeta para este en el árbol
+      "/images/nubiafocusultra/nubiafocusultra-1.jpg",
+      "/images/nubiafocusultra/nubiafocusultra-2.jpg",
+      "/images/nubiafocusultra/nubiafocusultra-3.jpg",
+      "/images/nubiafocusultra/nubiafocusultra-4.jpg",
+    ],
     category: "celulares",
   },
   {
@@ -908,7 +954,25 @@ export const phonesData: Phone[] = [
     storage: "256GB",
     price: 729,
     fullName: "ZTE Nubia NEO 3",
-    images: ["/images/zteneo3/zteneo3-1.jpg", "/images/zteneo3/zteneo3-2.jpg"], // ⚠️ No encontré carpeta para este en el árbol
+    images: [
+      "/images/nubianeo3/nubianeo3-1.jpg",
+      "/images/nubianeo3/nubianeo3-2.jpg",
+      "/images/nubianeo3/nubianeo3-3.jpg",
+      "/images/nubianeo3/nubianeo3-4.jpg",
+      "/images/nubianeo3/nubianeo3-5.jpg",
+      "/images/nubianeo3/nubianeo3-6.jpg",
+      "/images/nubianeo3/nubianeo3-7.jpg",
+      "/images/nubianeo3/nubianeo3-8.jpg",
+      "/images/nubianeo3/nubianeo3-9.jpg",
+      "/images/nubianeo3/nubianeo3-10.jpg",
+      "/images/nubianeo3/nubianeo3-11.jpg",
+      "/images/nubianeo3/nubianeo3-12.jpg",
+      "/images/nubianeo3/nubianeo3-13.jpg",
+      "/images/nubianeo3/nubianeo3-14.jpg",
+      "/images/nubianeo3/nubianeo3-15.jpg",
+      "/images/nubianeo3/nubianeo3-16.jpg",
+      "/images/nubianeo3/nubianeo3-17.jpg",
+    ],
     category: "celulares",
   },
 

@@ -43,7 +43,7 @@ export function ContactSection() {
               <h3 className="text-xl font-bold text-slate-800">WhatsApp</h3>
             </div>
             <a
-              href="https://wa.me/51960097010"
+              href="https://wa.me/51960097010?text=Hola%2C%20estoy%20interesado%20en%20el%20celular."
               target="_blank"
               rel="noopener noreferrer"
               className="text-green-600 hover:text-green-700 font-semibold underline"
@@ -91,7 +91,7 @@ export function ContactSection() {
               <h3 className="text-xl font-bold text-slate-800">Horario</h3>
             </div>
             <p className="text-slate-600">Lunes - Domingo: 7am - 8pm</p>
-            <p className="text-slate-600">Sábados: 9am - 5pm</p>
+            <p className="text-slate-600">Sábados: 7am - 7pm</p>
           </div>
 
           {/* Redes Sociales */}
