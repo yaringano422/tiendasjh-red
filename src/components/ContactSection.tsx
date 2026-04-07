@@ -112,7 +112,6 @@ export function ContactSection() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-4">
                 <div className="bg-indigo-100 p-3 rounded-full text-indigo-600">
-                  {/* Aquí puedes usar un icono de Lucide como Share2 o Globe si lo tienes importado */}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="w-6 h-6"
@@ -169,7 +168,7 @@ export function ContactSection() {
               Aceptamos: Efectivo, Transferencias Bancarias, Yape, Plin
             </p>
             <p className="text-sm text-slate-400">
-              * Todos los precios incluyen garantía de 6 meses
+              * Todos los precios incluyen garantía de 12 meses
             </p>
           </div>
         </div>

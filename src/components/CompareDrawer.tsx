@@ -100,7 +100,6 @@ export function CompareDrawer({ isOpen, onClose }: CompareDrawerProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {/* El resto de tu código de filas de la tabla se mantiene exactamente igual */}
                   <tr>
                     <td className="p-3 border font-medium bg-gray-50">Marca</td>
                     {compareList.map((phone) => (

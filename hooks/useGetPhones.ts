@@ -10,6 +10,7 @@ export interface Phone {
   price: number;
   images: string[];
   sku: string;
+  category_id: number;
 }
 
 export const useGetPhones = () => {
@@ -33,7 +34,8 @@ export const useGetPhones = () => {
             storage,
             price,
             images,
-            sku
+            sku,
+            category_id
           `,
           )
           .eq("is_active", true);

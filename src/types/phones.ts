@@ -9,6 +9,7 @@ export interface Phone {
   fullName: string;
   images: string[];
   category: string;
+  category_id: number;
 }
 
 export type BrandFilter =

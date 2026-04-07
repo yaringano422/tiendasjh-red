@@ -10,7 +10,6 @@ ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
     <HelmetProvider>
       {" "}
-      {/* 👈  */}
       <App />
     </HelmetProvider>
   </React.StrictMode>,

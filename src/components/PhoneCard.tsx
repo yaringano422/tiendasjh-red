@@ -14,10 +14,10 @@ import { Helmet } from "react-helmet-async";
 
 interface PhoneCardProps {
   phone: Phone;
-  isInitiallyOpen?: boolean; // 🔥 Propiedad para abrir desde la URL
+  isInitiallyOpen?: boolean;
 }
 
-// 🌐 Función para generar URLs limpias (Slugs)
+// Función para generar URLs limpias (Slugs)
 const generateSlug = (name: string) => {
   return name
     .toLowerCase()
@@ -34,14 +34,12 @@ export function PhoneCard({ phone, isInitiallyOpen = false }: PhoneCardProps) {
   const [currentImage, setCurrentImage] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
 
-  // 🚀 Toque Maestro: Si el padre le dice que debe estar abierto, lo abre.
   useEffect(() => {
     if (isInitiallyOpen) {
       setIsOpen(true);
     }
   }, [isInitiallyOpen]);
 
-  // 🛠️ Solución definitiva para TypeScript
   const rawImages = phone.images as string | string[] | undefined;
   const imagesArray: string[] = Array.isArray(rawImages)
     ? rawImages
@@ -54,7 +52,6 @@ export function PhoneCard({ phone, isInitiallyOpen = false }: PhoneCardProps) {
       ? imagesArray[currentImage]
       : getPhoneImage(phone.brand);
 
-  // 🚪 Función controlada para cerrar el modal y limpiar la URL
   const handleClose = () => {
     setIsOpen(false);
     window.history.pushState({}, "", window.location.pathname);
