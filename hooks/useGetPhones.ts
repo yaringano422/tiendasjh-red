@@ -40,13 +40,11 @@ export const useGetPhones = () => {
           )
           .eq("is_active", true);
 
-        // Si hay error en Supabase, lo mandamos al catch
+        
         if (error) throw error;
 
-        // Guardamos los datos tipados correctamente
         setPhones(data as unknown as Phone[]);
       } catch (error: any) {
-        // 🔥 Aquí capturamos el error sin romper React
         console.error(
           "❌ Error al traer datos de Supabase:",
           error.message || error,

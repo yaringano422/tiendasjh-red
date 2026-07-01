@@ -4,6 +4,7 @@ import { FilterBar } from "./components/FilterBar";
 import { CartDrawer } from "./components/CartDrawer";
 import { CompareDrawer } from "./components/CompareDrawer";
 import { ContactSection } from "./components/ContactSection";
+import { SmartFinder, SmartFilters } from "./components/SmartFinder";
 import { StoreProvider, useStore } from "./context/StoreContext";
 import { useGetPhones } from "../hooks/useGetPhones";
 import {
@@ -31,15 +32,19 @@ function AppContent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCompareOpen, setIsCompareOpen] = useState(false);
-
   const [activeSection, setActiveSection] = useState("inicio");
-
   const [activeProductSlug, setActiveProductSlug] = useState<string | null>(
     null,
   );
 
-  const { cartCount, compareList } = useStore();
+  // Nuevo estado para el recomendador inteligente
+  const [smartFilters, setSmartFilters] = useState<SmartFilters>({
+    maxPrice: null,
+    usage: "todos",
+    requires5G: null,
+  });
 
+  const { cartCount, compareList } = useStore();
   const { phones, loading } = useGetPhones();
 
   console.log("📡 Estado actual de phones:", phones);
@@ -53,24 +58,13 @@ function AppContent() {
     }
   }, []);
 
-  // FILTRADO DE PRODUCTOS
+  // FILTRADO DE PRODUCTOS COMBINADO (Categorías + Marcas + Barra de Búsqueda + SmartFinder)
   const filteredPhones = useMemo(() => {
+    if (!phones) return [];
+
     return phones.filter((phone) => {
-      // Filtro de Marcas
-      const matchesBrand =
-        selectedBrand === "Todos" ||
-        (phone.brand as string)
-          .toLowerCase()
-          .includes(selectedBrand.toLowerCase().split("/")[0]);
-
-      // Filtro de Búsqueda
-      const matchesSearch =
-        phone.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        phone.sku?.toLowerCase().includes(searchTerm.toLowerCase());
-
-      // FILTRO DE CATEGORÍAS
+      // 1. FILTRO DE CATEGORÍAS ORIGINAL
       let matchesCategory = false;
-
       if (activeSection === "nuevos" && phone.category_id === 1) {
         matchesCategory = true;
       } else if (
@@ -86,16 +80,72 @@ function AppContent() {
         matchesCategory = true;
       }
 
-      return matchesBrand && matchesSearch && matchesCategory;
-    });
-  }, [selectedBrand, searchTerm, phones, activeSection]);
+      // Si estamos en la sección de inicio (noticias), no evaluamos el resto de filtros del catálogo
+      if (activeSection === "inicio") return false;
 
+      // 2. FILTRO DE MARCAS ORIGINAL
+      const matchesBrand =
+        selectedBrand === "Todos" ||
+        (phone.brand as string)
+          .toLowerCase()
+          .includes(selectedBrand.toLowerCase().split("/")[0]);
+
+      // 3. FILTRO DE BÚSQUEDA ORIGINAL (Nombre + SKU)
+      const matchesSearch =
+        phone.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        phone.sku?.toLowerCase().includes(searchTerm.toLowerCase());
+
+      // 4. NUEVOS FILTROS DEL RECOMENDADOR INTELIGENTE (SmartFinder)
+
+      // A) Precio máximo
+      const matchesSmartPrice =
+        smartFilters.maxPrice === null || phone.price <= smartFilters.maxPrice;
+
+      // B) Uso inteligente basado en la memoria RAM del producto
+      let matchesSmartUsage = true;
+      if (smartFilters.usage !== "todos" && phone.ram) {
+        const ramValue = parseInt(phone.ram.replace(/[^0-9]/g, "")) || 0;
+
+        if (smartFilters.usage === "basico") {
+          matchesSmartUsage = ramValue <= 4;
+        } else if (smartFilters.usage === "potente") {
+          matchesSmartUsage = ramValue >= 6 && ramValue <= 8;
+        } else if (smartFilters.usage === "gaming") {
+          matchesSmartUsage = ramValue >= 8;
+        }
+      }
+
+      // C) Conectividad celular (5G vs 4G/otros)
+      let matchesSmartWifi = true;
+      if (smartFilters.requires5G !== null) {
+        const is5G = phone.connectivity?.toUpperCase().includes("5G");
+        if (smartFilters.requires5G === true) {
+          matchesSmartWifi = is5G;
+        } else {
+          matchesSmartWifi = !is5G;
+        }
+      }
+
+      // El producto debe cumplir absolutamente todas las condiciones activas
+      return (
+        matchesCategory &&
+        matchesBrand &&
+        matchesSearch &&
+        matchesSmartPrice &&
+        matchesSmartUsage &&
+        matchesSmartWifi
+      );
+    });
+  }, [selectedBrand, searchTerm, phones, activeSection, smartFilters]);
+
+  // ORDENAMIENTO ORIGINAL DE PRECIOS (Aplica sobre el resultado final filtrado)
   const sortedPhones = useMemo(() => {
     return [...filteredPhones].sort((a, b) => a.price - b.price);
   }, [filteredPhones]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* 🏷️ HEADER PRINCIPAL */}
       <header className="bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
@@ -143,74 +193,34 @@ function AppContent() {
       {/* 🗂️ MENÚ DE NAVEGACIÓN PRINCIPAL */}
       <nav className="bg-white shadow-sm border-b sticky top-[84px] z-20">
         <div className="max-w-7xl mx-auto px-4 flex gap-3 overflow-x-auto py-3">
-          <button
-            onClick={() => setActiveSection("inicio")}
-            className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all whitespace-nowrap ${
-              activeSection === "inicio"
-                ? "bg-blue-600 text-white shadow-md"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            }`}
-          >
-            Inicio / Noticias
-          </button>
-
-          <button
-            onClick={() => setActiveSection("nuevos")}
-            className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all whitespace-nowrap ${
-              activeSection === "nuevos"
-                ? "bg-blue-600 text-white shadow-md"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            }`}
-          >
-            Nuevos (Sellados)
-          </button>
-
-          <button
-            onClick={() => setActiveSection("reacondicionados")}
-            className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all whitespace-nowrap ${
-              activeSection === "reacondicionados"
-                ? "bg-orange-500 text-white shadow-md"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            }`}
-          >
-            Reacondicionados
-          </button>
-
-          <button
-            onClick={() => setActiveSection("pantallas")}
-            className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all whitespace-nowrap ${
-              activeSection === "pantallas"
-                ? "bg-emerald-600 text-white shadow-md"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            }`}
-          >
-            Pantallas
-          </button>
-
-          <button
-            onClick={() => setActiveSection("cargadores")}
-            className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all whitespace-nowrap ${
-              activeSection === "cargadores"
-                ? "bg-purple-600 text-white shadow-md"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            }`}
-          >
-            Cargadores
-          </button>
-
-          <button
-            onClick={() => setActiveSection("audifonos")}
-            className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all whitespace-nowrap ${
-              activeSection === "audifonos"
-                ? "bg-rose-600 text-white shadow-md"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            }`}
-          >
-            Audífonos
-          </button>
+          {[
+            { id: "inicio", label: "Inicio / Noticias", color: "bg-blue-600" },
+            { id: "nuevos", label: "Nuevos (Sellados)", color: "bg-blue-600" },
+            {
+              id: "reacondicionados",
+              label: "Reacondicionados",
+              color: "bg-orange-500",
+            },
+            { id: "pantallas", label: "Pantallas", color: "bg-emerald-600" },
+            { id: "cargadores", label: "Cargadores", color: "bg-purple-600" },
+            { id: "audifonos", label: "Audífonos", color: "bg-rose-600" },
+          ].map((sec) => (
+            <button
+              key={sec.id}
+              onClick={() => setActiveSection(sec.id)}
+              className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all whitespace-nowrap ${
+                activeSection === sec.id
+                  ? `${sec.color} text-white shadow-md`
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              {sec.label}
+            </button>
+          ))}
         </div>
       </nav>
 
+      {/* 🏛️ CONTENIDO PRINCIPAL */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 📰 SECCIÓN DE NOTICIAS */}
         {activeSection === "inicio" && (
@@ -243,6 +253,13 @@ function AppContent() {
         {/* 📱 SECCIÓN DE CATÁLOGO */}
         {activeSection !== "inicio" && (
           <>
+            {/* 🎯 RECOMENDADOR INTELIGENTE (Ubicado estratégicamente ARRIBA de FilterBar) */}
+            <SmartFinder
+              currentFilters={smartFilters}
+              onFilterChange={setSmartFilters}
+            />
+
+            {/* 🔍 BARRA DE MARCAS Y BÚSQUEDA */}
             <FilterBar
               selectedBrand={selectedBrand as any}
               onBrandChange={setSelectedBrand as any}
@@ -250,6 +267,7 @@ function AppContent() {
               onSearchChange={setSearchTerm}
             />
 
+            {/* 📊 CONTADOR E INDICADORES */}
             <div className="mb-4 flex items-center justify-between">
               <p className="text-gray-600">
                 Mostrando{" "}
@@ -263,6 +281,7 @@ function AppContent() {
               </p>
             </div>
 
+            {/* 🚀 MANEJO DE ESTADOS DE CARGA Y RENDER */}
             {loading ? (
               <div className="text-center py-16 flex flex-col items-center">
                 <Loader2 className="w-10 h-10 animate-spin text-blue-600 mb-4" />
@@ -272,10 +291,11 @@ function AppContent() {
               <div className="text-center py-16">
                 <Smartphone className="w-16 h-16 mx-auto text-gray-300 mb-4" />
                 <p className="text-xl text-gray-500">
-                  No se encontraron productos en esta categoría
+                  No se encontraron productos en esta categoría o filtros
                 </p>
                 <p className="text-gray-400 mt-2">
-                  Prueba seleccionando otra categoría o cambiando los filtros
+                  Prueba reiniciando el Asistente Inteligente o cambiando la
+                  búsqueda.
                 </p>
               </div>
             ) : (
@@ -295,6 +315,7 @@ function AppContent() {
         )}
       </main>
 
+      {/* 📞 SECCIONES FLOTANTES Y MODALES */}
       <ContactSection />
 
       <footer className="bg-white border-t py-6">
