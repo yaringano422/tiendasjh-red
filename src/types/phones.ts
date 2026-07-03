@@ -10,6 +10,9 @@ export interface Phone {
   images: string[];
   category: string;
   category_id: number;
+  sku?: string;
+  screen?: string;
+  battery?: string;
 }
 
 export type BrandFilter =

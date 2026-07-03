@@ -15,7 +15,6 @@ import {
   Newspaper,
 } from "lucide-react";
 
-// Función para generar Slugs
 const generateSlug = (name: string) => {
   return name
     .toLowerCase()
@@ -37,17 +36,18 @@ function AppContent() {
     null,
   );
 
-  // Nuevo estado para el recomendador inteligente
   const [smartFilters, setSmartFilters] = useState<SmartFilters>({
     maxPrice: null,
-    usage: "todos",
+    profile: "todos",
+    minRam: null,
     requires5G: null,
+    minBattery: null,
+    screenType: "todos",
+    usage: "todos",
   });
 
   const { cartCount, compareList } = useStore();
   const { phones, loading } = useGetPhones();
-
-  console.log("📡 Estado actual de phones:", phones);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -58,12 +58,11 @@ function AppContent() {
     }
   }, []);
 
-  // FILTRADO DE PRODUCTOS COMBINADO (Categorías + Marcas + Barra de Búsqueda + SmartFinder)
   const filteredPhones = useMemo(() => {
     if (!phones) return [];
 
-    return phones.filter((phone) => {
-      // 1. FILTRO DE CATEGORÍAS ORIGINAL
+    return phones.filter((phone: any) => {
+      // 🔥 Forzado temporal a 'any' para evitar que falle por propiedades faltantes en la interfaz
       let matchesCategory = false;
       if (activeSection === "nuevos" && phone.category_id === 1) {
         matchesCategory = true;
@@ -80,72 +79,70 @@ function AppContent() {
         matchesCategory = true;
       }
 
-      // Si estamos en la sección de inicio (noticias), no evaluamos el resto de filtros del catálogo
       if (activeSection === "inicio") return false;
 
-      // 2. FILTRO DE MARCAS ORIGINAL
       const matchesBrand =
         selectedBrand === "Todos" ||
         (phone.brand as string)
           .toLowerCase()
           .includes(selectedBrand.toLowerCase().split("/")[0]);
 
-      // 3. FILTRO DE BÚSQUEDA ORIGINAL (Nombre + SKU)
       const matchesSearch =
         phone.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        phone.sku?.toLowerCase().includes(searchTerm.toLowerCase());
+        (phone.sku &&
+          phone.sku.toLowerCase().includes(searchTerm.toLowerCase()));
 
-      // 4. NUEVOS FILTROS DEL RECOMENDADOR INTELIGENTE (SmartFinder)
-
-      // A) Precio máximo
+      // ========================================================
+      // FILTROS SMARTFINDER (CORREGIDOS)
+      // ========================================================
       const matchesSmartPrice =
         smartFilters.maxPrice === null || phone.price <= smartFilters.maxPrice;
 
-      // B) Uso inteligente basado en la memoria RAM del producto
-      let matchesSmartUsage = true;
-      if (smartFilters.usage !== "todos" && phone.ram) {
+      let matchesSmartRam = true;
+      if (smartFilters.minRam !== null && phone.ram) {
         const ramValue = parseInt(phone.ram.replace(/[^0-9]/g, "")) || 0;
-
-        if (smartFilters.usage === "basico") {
-          matchesSmartUsage = ramValue <= 4;
-        } else if (smartFilters.usage === "potente") {
-          matchesSmartUsage = ramValue >= 6 && ramValue <= 8;
-        } else if (smartFilters.usage === "gaming") {
-          matchesSmartUsage = ramValue >= 8;
-        }
+        matchesSmartRam = ramValue >= smartFilters.minRam;
       }
 
-      // C) Conectividad celular (5G vs 4G/otros)
-      let matchesSmartWifi = true;
-      if (smartFilters.requires5G !== null) {
-        const is5G = phone.connectivity?.toUpperCase().includes("5G");
-        if (smartFilters.requires5G === true) {
-          matchesSmartWifi = is5G;
-        } else {
-          matchesSmartWifi = !is5G;
-        }
+      let matchesSmartScreen = true;
+      if (smartFilters.screenType === "amoled_oled" && phone.screen) {
+        const screenStr = (phone.screen as string).toUpperCase();
+        matchesSmartScreen =
+          screenStr.includes("AMOLED") || screenStr.includes("OLED");
       }
 
-      // El producto debe cumplir absolutamente todas las condiciones activas
+      let matchesSmartBattery = true;
+      if (smartFilters.minBattery !== null && phone.battery) {
+        const batteryValue =
+          parseInt((phone.battery as string).replace(/[^0-9]/g, "")) || 0;
+        matchesSmartBattery = batteryValue >= smartFilters.minBattery;
+      }
+
+      let matchesSmart5G = true;
+      if (smartFilters.requires5G !== null && phone.connectivity) {
+        const is5G = phone.connectivity.toUpperCase().includes("5G");
+        matchesSmart5G = smartFilters.requires5G ? is5G : !is5G;
+      }
+
       return (
         matchesCategory &&
         matchesBrand &&
         matchesSearch &&
         matchesSmartPrice &&
-        matchesSmartUsage &&
-        matchesSmartWifi
+        matchesSmartRam &&
+        matchesSmartScreen &&
+        matchesSmartBattery &&
+        matchesSmart5G
       );
     });
   }, [selectedBrand, searchTerm, phones, activeSection, smartFilters]);
 
-  // ORDENAMIENTO ORIGINAL DE PRECIOS (Aplica sobre el resultado final filtrado)
   const sortedPhones = useMemo(() => {
     return [...filteredPhones].sort((a, b) => a.price - b.price);
   }, [filteredPhones]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* 🏷️ HEADER PRINCIPAL */}
       <header className="bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
@@ -190,7 +187,6 @@ function AppContent() {
         </div>
       </header>
 
-      {/* 🗂️ MENÚ DE NAVEGACIÓN PRINCIPAL */}
       <nav className="bg-white shadow-sm border-b sticky top-[84px] z-20">
         <div className="max-w-7xl mx-auto px-4 flex gap-3 overflow-x-auto py-3">
           {[
@@ -220,9 +216,8 @@ function AppContent() {
         </div>
       </nav>
 
-      {/* 🏛️ CONTENIDO PRINCIPAL */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 📰 SECCIÓN DE NOTICIAS */}
+        =
         {activeSection === "inicio" && (
           <div className="space-y-6">
             <div className="flex items-center gap-2 mb-2">
@@ -232,7 +227,7 @@ function AppContent() {
               </h2>
             </div>
 
-            <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all border border-gray-100">
+            <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100">
               <span className="text-xs text-blue-600 font-bold uppercase tracking-wide">
                 Repuestos
               </span>
@@ -241,7 +236,7 @@ function AppContent() {
               </h3>
               <p className="text-gray-600 mt-2 text-sm leading-relaxed">
                 Descubre cuáles son los módulos de pantalla con mejor tasa de
-                refresco, brillo y durabilidad para tus reparaciones este año...
+                refresco, brillo y durabilidad...
               </p>
               <button className="text-blue-600 text-sm font-semibold mt-3 hover:underline">
                 Leer más →
@@ -249,17 +244,16 @@ function AppContent() {
             </div>
           </div>
         )}
-
-        {/* 📱 SECCIÓN DE CATÁLOGO */}
         {activeSection !== "inicio" && (
           <>
-            {/* 🎯 RECOMENDADOR INTELIGENTE (Ubicado estratégicamente ARRIBA de FilterBar) */}
-            <SmartFinder
-              currentFilters={smartFilters}
-              onFilterChange={setSmartFilters}
-            />
+            {(activeSection === "nuevos" ||
+              activeSection === "reacondicionados") && (
+              <SmartFinder
+                currentFilters={smartFilters}
+                onFilterChange={setSmartFilters}
+              />
+            )}
 
-            {/* 🔍 BARRA DE MARCAS Y BÚSQUEDA */}
             <FilterBar
               selectedBrand={selectedBrand as any}
               onBrandChange={setSelectedBrand as any}
@@ -267,7 +261,6 @@ function AppContent() {
               onSearchChange={setSearchTerm}
             />
 
-            {/* 📊 CONTADOR E INDICADORES */}
             <div className="mb-4 flex items-center justify-between">
               <p className="text-gray-600">
                 Mostrando{" "}
@@ -281,7 +274,6 @@ function AppContent() {
               </p>
             </div>
 
-            {/* 🚀 MANEJO DE ESTADOS DE CARGA Y RENDER */}
             {loading ? (
               <div className="text-center py-16 flex flex-col items-center">
                 <Loader2 className="w-10 h-10 animate-spin text-blue-600 mb-4" />
@@ -292,10 +284,6 @@ function AppContent() {
                 <Smartphone className="w-16 h-16 mx-auto text-gray-300 mb-4" />
                 <p className="text-xl text-gray-500">
                   No se encontraron productos en esta categoría o filtros
-                </p>
-                <p className="text-gray-400 mt-2">
-                  Prueba reiniciando el Asistente Inteligente o cambiando la
-                  búsqueda.
                 </p>
               </div>
             ) : (
@@ -315,7 +303,6 @@ function AppContent() {
         )}
       </main>
 
-      {/* 📞 SECCIONES FLOTANTES Y MODALES */}
       <ContactSection />
 
       <footer className="bg-white border-t py-6">

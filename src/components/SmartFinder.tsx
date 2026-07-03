@@ -1,172 +1,343 @@
 import { useState } from "react";
 import {
   Sparkles,
-  DollarSign,
-  Cpu,
-  Wifi,
-  RotateCcw,
+  ArrowRight,
+  RefreshCw,
   Check,
+  Smartphone,
+  ShieldCheck,
+  Zap,
+  Camera,
+  Eye,
 } from "lucide-react";
 
-// Definimos la estructura de los filtros del recomendador
 export interface SmartFilters {
   maxPrice: number | null;
-  usage: "todos" | "basico" | "potente" | "gaming";
+  profile: string;
+  minRam: number | null;
   requires5G: boolean | null;
+  minBattery: number | null;
+  screenType: string; // 'todos' | 'amoled_oled'
+  usage: string | null;
 }
 
 interface SmartFinderProps {
-  onFilterChange: (filters: SmartFilters) => void;
   currentFilters: SmartFilters;
+  onFilterChange: (filters: SmartFilters) => void;
 }
 
 export function SmartFinder({
-  onFilterChange,
   currentFilters,
+  onFilterChange,
 }: SmartFinderProps) {
-  const [isActive, setIsActive] = useState(false);
+  const [step, setStep] = useState<number>(1);
 
-  const handlePriceChange = (price: number | null) => {
-    onFilterChange({ ...currentFilters, maxPrice: price });
+  const profiles = [
+    {
+      id: "whatsapp",
+      label: "Solo WhatsApp y Llamadas",
+      icon: Smartphone,
+      desc: "Rendimiento diario básico, llamadas limpias y redes sociales ligeras.",
+    },
+    {
+      id: "estudiante",
+      label: "Estudiante / Oficina",
+      icon: ShieldCheck,
+      desc: "Ideal para multitarea, documentos, clases en línea y excelente autonomía.",
+    },
+    {
+      id: "gamer",
+      label: "Gamer Exigente",
+      icon: Zap,
+      desc: "Procesador potente, alta tasa de refresco en pantalla y optimización gráfica.",
+    },
+    {
+      id: "fotografo",
+      label: "Fotografía y Redes (TikTok)",
+      icon: Camera,
+      desc: "Cámaras con buen procesamiento HDR, estabilización o pantallas nítidas.",
+    },
+    {
+      id: "premium",
+      label: "Lo Mejor de lo Mejor (Premium)",
+      icon: Eye,
+      desc: "Máxima velocidad, pantallas AMOLED fluidas y características top de gama.",
+    },
+  ];
+
+  const handleProfileSelect = (profileId: string) => {
+    let minRam = null;
+    let screenType = "todos";
+    let minBattery = null;
+
+    switch (profileId) {
+      case "whatsapp":
+        minRam = 0;
+        break;
+      case "estudiante":
+        minRam = 4;
+        minBattery = 5000;
+        break;
+      case "gamer":
+        minRam = 8;
+        screenType = "todos";
+        break;
+      case "fotografo":
+        minRam = 6;
+        screenType = "amoled_oled";
+        break;
+      case "premium":
+        minRam = 8;
+        screenType = "amoled_oled";
+        break;
+    }
+
+    onFilterChange({
+      ...currentFilters,
+      profile: profileId,
+      usage: profileId,
+      minRam,
+      screenType,
+      minBattery,
+    });
+    setStep(2);
   };
 
-  const handleUsageChange = (usage: SmartFilters["usage"]) => {
-    onFilterChange({ ...currentFilters, usage });
+  const handlePriceSelect = (maxPrice: number | null) => {
+    onFilterChange({ ...currentFilters, maxPrice });
+    setStep(3);
   };
 
-  const handleWifiChange = (requires5G: boolean | null) => {
+  const handleConnectivitySelect = (requires5G: boolean | null) => {
     onFilterChange({ ...currentFilters, requires5G });
+    setStep(4);
   };
 
-  const handleReset = () => {
+  const resetFinder = () => {
     onFilterChange({
       maxPrice: null,
-      usage: "todos",
+      profile: "todos",
+      minRam: null,
       requires5G: null,
+      minBattery: null,
+      screenType: "todos",
+      usage: "todos",
     });
+    setStep(1);
   };
 
-  // Verificar si hay algún filtro activo para mostrar el botón de limpiar
-  const hasActiveFilters =
+  const isFilterActive =
+    currentFilters.profile !== "todos" ||
     currentFilters.maxPrice !== null ||
-    currentFilters.usage !== "todos" ||
     currentFilters.requires5G !== null;
 
   return (
-    <div className="w-full bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 border border-blue-200 dark:border-zinc-800 rounded-2xl p-6 mb-6 shadow-sm">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+    <div className="bg-white rounded-2xl border border-slate-100 shadow-xl overflow-hidden mb-8 transition-all">
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-900 p-5 text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center gap-3">
-          <div className="bg-gradient-to-br from-blue-600 to-purple-600 p-2.5 rounded-xl text-white shadow-md animate-pulse">
-            <Sparkles className="w-5 h-5" />
+          <div className="p-2.5 bg-white/10 rounded-xl backdrop-blur-md border border-white/10 animate-pulse">
+            <Sparkles className="w-5 h-5 text-amber-400" />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-zinc-950 dark:text-white">
-              ¿No sabes cuál elegir? ¡Usa el Asistente Inteligente!
+            <h3 className="text-lg font-bold tracking-tight">
+              Asistente de Compra Inteligente
             </h3>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              Responde 3 preguntas rápidas y encuentra tu equipo ideal en
-              segundos.
+            <p className="text-xs text-indigo-200">
+              Encuentra tu smartphone ideal analizando métricas de hardware
             </p>
           </div>
         </div>
 
-        {hasActiveFilters && (
+        {isFilterActive && (
           <button
-            onClick={handleReset}
-            className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+            onClick={resetFinder}
+            className="flex items-center gap-2 text-xs font-semibold bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition-all border border-white/10"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
-            Reiniciar Asistente
+            <RefreshCw className="w-3.5 h-3.5" />
+            Reiniciar Filtros
           </button>
         )}
       </div>
 
-      {/* Panel de Opciones */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-        {/* Pregunta 1: Presupuesto */}
-        <div className="space-y-2">
-          <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 flex items-center gap-1.5">
-            <DollarSign className="w-3.5 h-3.5 text-green-500" /> Rango de
-            Precio
-          </label>
-          <div className="grid grid-cols-3 gap-1.5">
-            {[
-              { label: "Económico", value: 700 },
-              { label: "Medio", value: 1500 },
-              { label: "Premium", value: null },
-            ].map((opt) => (
-              <button
-                key={opt.label}
-                onClick={() => handlePriceChange(opt.value)}
-                className={`px-2 py-2 text-xs font-medium rounded-xl border transition-all ${
-                  (opt.value === null && currentFilters.maxPrice === null) ||
-                  (opt.value !== null && currentFilters.maxPrice === opt.value)
-                    ? "bg-blue-600 border-blue-600 text-white font-semibold shadow-sm"
-                    : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700"
-                }`}
-              >
-                {opt.label} {opt.value ? `(≤ S/${opt.value})` : "(Cualquiera)"}
-              </button>
-            ))}
-          </div>
+      <div className="p-6 bg-slate-50/50">
+        <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2">
+          {[1, 2, 3, 4].map((s) => (
+            <button
+              key={s}
+              onClick={() => step > s && setStep(s)}
+              disabled={step < s}
+              className={`h-2 rounded-full transition-all flex-1 min-w-[40px] ${
+                step === s
+                  ? "bg-indigo-600 w-8"
+                  : step > s
+                    ? "bg-emerald-500 cursor-pointer"
+                    : "bg-slate-200"
+              }`}
+            />
+          ))}
+          <span className="text-xs font-bold text-slate-400 ml-2 uppercase tracking-wider">
+            {step === 4 ? "Listo" : `Paso ${step} de 3`}
+          </span>
         </div>
 
-        {/* Pregunta 2: Uso Principal */}
-        <div className="space-y-2">
-          <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 flex items-center gap-1.5">
-            <Cpu className="w-3.5 h-3.5 text-purple-500" /> ¿Para qué lo usarás?
-          </label>
-          <div className="grid grid-cols-3 gap-1.5">
-            {[
-              { label: "Básico (Redes/Llamadas)", value: "basico" },
-              { label: "Trabajo / Fotos", value: "potente" },
-              { label: "Gaming / Alto Rendimiento", value: "gaming" },
-            ].map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => handleUsageChange(opt.value as any)}
-                className={`px-2 py-2 text-xs font-medium rounded-xl border transition-all ${
-                  currentFilters.usage === opt.value
-                    ? "bg-purple-600 border-purple-600 text-white font-semibold shadow-sm"
-                    : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700"
-                }`}
-                title={opt.label}
-              >
-                {opt.value === "basico"
-                  ? "Básico"
-                  : opt.value === "potente"
-                    ? "Potente"
-                    : "Gaming"}
-              </button>
-            ))}
+        {step === 1 && (
+          <div className="space-y-4 animate-fadeIn">
+            <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide mb-3">
+              ¿Cómo describirías tu perfil o el uso principal del equipo?
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {profiles.map((p) => {
+                const Icon = p.icon;
+                const isSelected = currentFilters.profile === p.id;
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => handleProfileSelect(p.id)}
+                    className={`p-4 rounded-xl text-left border transition-all flex gap-3 items-start group ${
+                      isSelected
+                        ? "bg-indigo-50 border-indigo-500 ring-2 ring-indigo-500/20"
+                        : "bg-white border-slate-200 hover:border-indigo-300 hover:shadow-md"
+                    }`}
+                  >
+                    <div
+                      className={`p-2 rounded-lg mt-0.5 transition-colors ${isSelected ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-600 group-hover:bg-indigo-50 group-hover:text-indigo-600"}`}
+                    >
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-sm text-slate-900 flex items-center gap-1.5">
+                        {p.label}
+                        {isSelected && (
+                          <Check className="w-4 h-4 text-emerald-600" />
+                        )}
+                      </p>
+                      <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                        {p.desc}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Pregunta 3: Red / Conectividad */}
-        <div className="space-y-2">
-          <label className="text-xs font-bold uppercase tracking-wider text-zinc-500 flex items-center gap-1.5">
-            <Wifi className="w-3.5 h-3.5 text-blue-500" /> Red Requerida
-          </label>
-          <div className="grid grid-cols-3 gap-1.5">
-            {[
-              { label: "Solo 5G", value: true },
-              { label: "4G o más", value: false },
-              { label: "Cualquiera", value: null },
-            ].map((opt) => (
-              <button
-                key={String(opt.value)}
-                onClick={() => handleWifiChange(opt.value)}
-                className={`px-2 py-2 text-xs font-medium rounded-xl border transition-all ${
-                  currentFilters.requires5G === opt.value
-                    ? "bg-pink-600 border-pink-600 text-white font-semibold shadow-sm"
-                    : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700"
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
+        {step === 2 && (
+          <div className="space-y-4 animate-fadeIn">
+            <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide mb-3">
+              ¿Cuál es tu rango de presupuesto estimado?
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                {
+                  label: "Hasta S/ 500",
+                  val: 500,
+                  desc: "Gama de entrada / Esenciales",
+                },
+                {
+                  label: "Hasta S/ 900",
+                  val: 900,
+                  desc: "Calidad-Precio equilibrada",
+                },
+                {
+                  label: "Hasta S/ 1600",
+                  val: 1600,
+                  desc: "Gama media-alta avanzada",
+                },
+                {
+                  label: "Ver todos los precios",
+                  val: null,
+                  desc: "Sin límites",
+                },
+              ].map((p, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handlePriceSelect(p.val)}
+                  className={`p-4 rounded-xl text-center border transition-all ${
+                    currentFilters.maxPrice === p.val
+                      ? "bg-indigo-50 border-indigo-500 font-bold text-indigo-900"
+                      : "bg-white border-slate-200 hover:border-indigo-300"
+                  }`}
+                >
+                  <p className="text-base font-bold text-slate-900">
+                    {p.label}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">{p.desc}</p>
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
+
+        {step === 3 && (
+          <div className="space-y-4 animate-fadeIn">
+            <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide mb-3">
+              ¿Es importante la conectividad de última generación 5G?
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {[
+                {
+                  label: "Sí, requiero Red 5G",
+                  val: true,
+                  desc: "Máxima velocidad urbana.",
+                },
+                {
+                  label: "No, con 4G estoy bien",
+                  val: false,
+                  desc: "Suficiente para todo uso estándar.",
+                },
+                {
+                  label: "Cualquiera me sirve",
+                  val: null,
+                  desc: "Priorizar otras especificaciones.",
+                },
+              ].map((c, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleConnectivitySelect(c.val)}
+                  className={`p-4 rounded-xl text-left border transition-all ${
+                    currentFilters.requires5G === c.val
+                      ? "bg-indigo-50 border-indigo-500 font-bold"
+                      : "bg-white border-slate-200 hover:border-indigo-300"
+                  }`}
+                >
+                  <p className="text-sm font-bold text-slate-900">{c.label}</p>
+                  <p className="text-xs text-slate-500 mt-1">{c.desc}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {step === 4 && (
+          <div className="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 animate-fadeIn">
+            <div className="space-y-1">
+              <h4 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-ping" />
+                Asistente Activo: Filtrando stock en tiempo real
+              </h4>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Mostrando celulares que cumplen con: Perfil:{" "}
+                <span className="font-semibold text-indigo-700">
+                  "{currentFilters.profile}"
+                </span>
+                {currentFilters.maxPrice
+                  ? ` • Menor a S/ ${currentFilters.maxPrice}`
+                  : " • Cualquier precio"}
+                {currentFilters.requires5G !== null
+                  ? ` • Red: ${currentFilters.requires5G ? "Solo 5G" : "Solo 4G"}`
+                  : ""}
+              </p>
+            </div>
+            <button
+              onClick={() => setStep(1)}
+              className="flex items-center gap-2 text-xs bg-indigo-600 text-white font-bold px-4 py-2.5 rounded-lg hover:bg-indigo-700 shadow-sm transition-all"
+            >
+              Ajustar respuestas
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

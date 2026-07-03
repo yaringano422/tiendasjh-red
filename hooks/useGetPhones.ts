@@ -40,7 +40,6 @@ export const useGetPhones = () => {
           )
           .eq("is_active", true);
 
-        
         if (error) throw error;
 
         setPhones(data as unknown as Phone[]);
