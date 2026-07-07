@@ -17,6 +17,7 @@ const brands: BrandFilter[] = [
   "Motorola",
   "Infinix",
   "Tablets",
+  "Tecno",
   "Básicos",
 ];
 

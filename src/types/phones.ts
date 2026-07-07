@@ -24,4 +24,5 @@ export type BrandFilter =
   | "Motorola"
   | "Infinix"
   | "Tablets"
+  | "Tecno"
   | "Básicos";
